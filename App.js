@@ -8,6 +8,7 @@ import {
   Button,
   FlatList,
   Pressable,
+  Animated,
 } from "react-native";
 
 export default function App() {
@@ -17,13 +18,54 @@ export default function App() {
 
   const addTodo = () => {
     if (todo.trim()) {
-      setTodos([...todos, { id: Date.now().toString(), text: todo }]);
+      setTodos([
+        ...todos,
+        {
+          id: Date.now().toString(),
+          text: todo,
+        },
+      ]);
       setTodo("");
     }
   };
 
+  const completeTask = (id) => {
+    setTodos((prevTodos) => prevTodos.filter((item) => item.id !== id));
+  };
+
   const deleteTodo = (id) => {
     setTodos(todos.filter((item) => item.id !== id));
+  };
+
+  // Move TodoItem outside of App's main return
+  const TodoItem = ({ item, onComplete, isDarkMode }) => {
+    const opacity = new Animated.Value(1);
+
+    const handleComplete = () => {
+      Animated.timing(opacity, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }).start(() => {
+        onComplete(item.id);
+      });
+    };
+
+    return (
+      <Animated.View
+        style={[
+          styles.todoContainer,
+          { backgroundColor: isDarkMode ? "#333" : "#e0e0e0", opacity },
+        ]}
+      >
+        <Text style={[styles.todo, { color: isDarkMode ? "#fff" : "#000" }]}>
+          {item.text}
+        </Text>
+        <Pressable style={styles.deleteButton} onPress={handleComplete}>
+          <Text style={styles.deleteButtonText}>Complete</Text>
+        </Pressable>
+      </Animated.View>
+    );
   };
 
   return (
@@ -37,7 +79,15 @@ export default function App() {
         title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
         onPress={() => setIsDarkMode((prevMode) => !prevMode)}
       />
-      <Text>Welcome to ToDo List App!</Text>
+      <Text
+        style={{
+          color: isDarkMode ? "#fff" : "#000",
+          fontSize: 20,
+          fontWeight: "bold",
+        }}
+      >
+        Task Manager
+      </Text>
       <TextInput
         style={[styles.input, { color: isDarkMode ? "#fff" : "#000" }]}
         placeholder="Add a new task..."
@@ -51,19 +101,11 @@ export default function App() {
         data={todos}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View style={styles.todoContainer}>
-            <Text
-              style={[styles.todo, { color: isDarkMode ? "#fff" : "#000" }]}
-            >
-              {item.text}
-            </Text>
-            <Pressable
-              style={styles.deleteButton}
-              onPress={() => deleteTodo(item.id)}
-            >
-              <Text style={styles.deleteButtonText}>Delete</Text>
-            </Pressable>
-          </View>
+          <TodoItem
+            item={item}
+            onComplete={completeTask}
+            isDarkMode={isDarkMode}
+          />
         )}
       />
 
@@ -95,10 +137,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     width: "100%",
     paddingVertical: 10,
-    paddingHorizontal: 5,
-    backgroundColor: "#f9c2ff",
+    paddingHorizontal: 15,
     marginVertical: 5,
-    borderRadius: 5,
+    borderRadius: 10,
   },
   todo: {
     fontSize: 18,
