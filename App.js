@@ -13,6 +13,7 @@ import {
 export default function App() {
   const [todo, setTodo] = useState("");
   const [todos, setTodos] = useState([]);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const addTodo = () => {
     if (todo.trim()) {
@@ -26,11 +27,21 @@ export default function App() {
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: isDarkMode ? "#121212" : "#fff" },
+      ]}
+    >
+      <Button
+        title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+        onPress={() => setIsDarkMode((prevMode) => !prevMode)}
+      />
       <Text>Welcome to ToDo List App!</Text>
       <TextInput
-        style={styles.input}
+        style={[styles.input, { color: isDarkMode ? "#fff" : "#000" }]}
         placeholder="Add a new task..."
+        placeholderTextColor={isDarkMode ? "#ccc" : "#888"}
         value={todo}
         onChangeText={(text) => setTodo(text)}
       />
@@ -41,7 +52,11 @@ export default function App() {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.todoContainer}>
-            <Text style={styles.todo}>{item.text}</Text>
+            <Text
+              style={[styles.todo, { color: isDarkMode ? "#fff" : "#000" }]}
+            >
+              {item.text}
+            </Text>
             <Pressable
               style={styles.deleteButton}
               onPress={() => deleteTodo(item.id)}
